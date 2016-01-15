@@ -27,7 +27,7 @@ class Task:
         for param, value in kwargs.items():
             self.__params[param] = value
 
-        self.__params['active_job'] = Job(self.__params['activation_time'], self.__params['activation_time'] + self.__params['life_cycle'])
+        self.__params['active_job'] = Job(release_time=self.__params['activation_time'], deadline=self.__params['activation_time'] + self.__params['life_cycle'], parent=self)
         self.__params['parent'] = None
         self.__valid = True
 
@@ -49,5 +49,16 @@ class Task:
 
         return False
 
+    def next_look(self, relative_offset=None):
+        period = self.get_parameters('period')
+        life_cycle = self.get_parameters('life_cycle')
+        release_time = None
 
-    def next_look(self, offset=None):
+        if relative_offset:
+            release_time = relative_offset
+        else:
+            release_time = self.__params['active_job'].get_parameters('release_time')
+
+        new_release_time = release_time + period
+        new_dealine_time = new_release_time + life_cycle
+        self.__params['active_job'] = Job(release_time=new_release_time, deadline=new_dealine_time, parent=self)
